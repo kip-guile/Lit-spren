@@ -3,14 +3,11 @@ const admin = require('firebase-admin')
 
 admin.initializeApp()
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-exports.helloWorld = functions.https.onRequest((request, response) => {
- response.send("Hello World!");
-});
+const express = require('express')
+const app = express()
 
-exports.getMentions = functions.https.onRequest((req, res) => {
+
+app.get('/mentions', (req, res) => {
     admin.firestore().collection('mention').get()
         .then(data => {
             let mentions = []
@@ -22,10 +19,7 @@ exports.getMentions = functions.https.onRequest((req, res) => {
         .catch((err) => console.error(err))
 })
 
-exports.createMentions = functions.https.onRequest((req, res) => {
-    if(req.method !== 'POST') {
-        return res.status(400).json({error: 'BAD REQUEST! METHOD NOT ALLOWED'})
-    }
+app.post('/mention', (req, res) => {
     const newMention = {
         body: req.body.body,
         username: req.body.username,
@@ -41,3 +35,5 @@ exports.createMentions = functions.https.onRequest((req, res) => {
             console.error(err)
         })
 })
+
+exports.api = functions.https.onRequest(app)
