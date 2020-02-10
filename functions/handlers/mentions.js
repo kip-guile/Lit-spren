@@ -1,7 +1,7 @@
 const {db} = require('../utils/admin')
 
 exports.getAllMentions = (req, res) => {
-    db.collection('mention').orderBy('createdAt', 'desc').get()
+    db.collection('mention').orderBy('time', 'desc').get()
         .then(data => {
             let mentions = []
             data.forEach(mention => {
