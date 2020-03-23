@@ -41,7 +41,7 @@ app.post("/notifications", FBAuth, markNotificationsRead);
 exports.api = functions.region("europe-west1").https.onRequest(app);
 
 exports.createNotificationOnLike = functions
-  .region("europe-west2")
+  .region("europe-west1")
   .firestore.document("likes/{id}")
   .onCreate(snapshot => {
     console.log(snapshot);
@@ -69,7 +69,7 @@ exports.createNotificationOnLike = functions
   });
 
 exports.deleteNotificationsOnUnlike = functions
-  .region("europe-west2")
+  .region("europe-west1")
   .firestore.document("likes/{id}")
   .onDelete(snapshot => {
     db.doc(`/notifications/${snapshot.id}`)
@@ -83,7 +83,7 @@ exports.deleteNotificationsOnUnlike = functions
   });
 
 exports.createNotificationOnComment = functions
-  .region("europe-west2")
+  .region("europe-west1")
   .firestore.document("comments/{id}")
   .onCreate(snapshot => {
     db.doc(`/mention/${snapshot.data().mentionId}`)
