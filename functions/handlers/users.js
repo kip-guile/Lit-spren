@@ -121,7 +121,7 @@ exports.getUserDetails = (req, res) => {
       if (doc.exists) {
         userData.user = doc.data();
         return db
-          .collection("mentions")
+          .collection("mention")
           .where("username", "==", req.params.username)
           .orderBy("createdAt", "desc")
           .get();
