@@ -123,7 +123,7 @@ exports.getUserDetails = (req, res) => {
         return db
           .collection("mention")
           .where("username", "==", req.params.username)
-          .orderBy("createdAt", "desc")
+          .orderBy("time", "desc")
           .get();
       } else {
         return res.status(404).json({ errror: "User not found" });
@@ -185,7 +185,7 @@ exports.getAuthenticatedUser = (req, res) => {
           mentionId: doc.data().mentionId,
           type: doc.data().type,
           read: doc.data().read,
-          notificationId: doc.data().recipient
+          notificationId: doc.id
         });
       });
       return res.json(userData);
