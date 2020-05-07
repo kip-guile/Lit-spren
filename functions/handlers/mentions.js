@@ -4,19 +4,22 @@ exports.getAllMentions = (req, res) => {
   db.collection("mention")
     .orderBy("time", "desc")
     .get()
-    .then(data => {
+    .then((data) => {
       let mentions = [];
-      data.forEach(mention => {
+      data.forEach((mention) => {
         mentions.push({
           mentionId: mention.id,
           body: mention.data().body,
           username: mention.data().username,
-          time: mention.data().time
+          time: mention.data().time,
+          userImage: doc.data().userImage,
+          commentCount: doc.data().commentCount,
+          likeCount: doc.data().likeCount,
         });
       });
       return res.json(mentions);
     })
-    .catch(err => console.error(err));
+    .catch((err) => console.error(err));
 };
 
 exports.postOneMention = (req, res) => {
@@ -29,17 +32,17 @@ exports.postOneMention = (req, res) => {
     username: req.user.username,
     time: new Date().toISOString(),
     likeCount: 0,
-    commentCount: 0
+    commentCount: 0,
   };
 
   db.collection("mention")
     .add(newMention)
-    .then(doc => {
+    .then((doc) => {
       const reMention = newMention;
       reMention.mentionId = doc.id;
       res.json(reMention);
     })
-    .catch(err => {
+    .catch((err) => {
       res.status(500).json({ error: "something went wrong" });
       console.error(err);
     });
@@ -50,7 +53,7 @@ exports.getMention = (req, res) => {
   console.log(req.params.mentionId);
   db.doc(`/mention/${req.params.mentionId}`)
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
         return res.status(404).json({ error: "Mention not found" });
       }
@@ -62,14 +65,14 @@ exports.getMention = (req, res) => {
         .where("mentionId", "==", req.params.mentionId)
         .get();
     })
-    .then(data => {
+    .then((data) => {
       mentionData.comments = [];
-      data.forEach(doc => {
+      data.forEach((doc) => {
         mentionData.comments.push(doc.data());
       });
       return res.json(mentionData);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -77,19 +80,19 @@ exports.getMention = (req, res) => {
 
 exports.commentOnMention = (req, res) => {
   if (req.body.body.trim() === "")
-    return res.status(400).json({ error: "must not be empty" });
+    return res.status(400).json({ comment: "must not be empty" });
 
   const newComment = {
     body: req.body.body,
     createdAt: new Date().toISOString(),
     mentionId: req.params.mentionId,
     username: req.user.username,
-    userImage: req.user.imageUrl
+    userImage: req.user.imageUrl,
   };
 
   db.doc(`/mention/${req.params.mentionId}`)
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
         return res.status(404).json({ error: "mention not found" });
       }
@@ -101,7 +104,7 @@ exports.commentOnMention = (req, res) => {
     .then(() => {
       res.json(newComment);
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.status(500).json({ error: "Something went wrong" });
     });
@@ -120,7 +123,7 @@ exports.likeMention = (req, res) => {
 
   mentionDocument
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (doc.exists) {
         mentionData = doc.data();
         mentionData.mentionId = doc.id;
@@ -129,13 +132,13 @@ exports.likeMention = (req, res) => {
         return res.status(404).json({ error: "mention not found" });
       }
     })
-    .then(data => {
+    .then((data) => {
       if (data.empty) {
         return db
           .collection("likes")
           .add({
             mentionId: req.params.mentionId,
-            username: req.user.username
+            username: req.user.username,
           })
           .then(() => {
             mentionData.likeCount++;
@@ -148,7 +151,7 @@ exports.likeMention = (req, res) => {
         return res.status(400).json({ error: "mention already liked" });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -167,7 +170,7 @@ exports.unlikeMention = (req, res) => {
 
   mentionDocument
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (doc.exists) {
         mentionData = doc.data();
         mentionData.mentionId = doc.id;
@@ -176,7 +179,7 @@ exports.unlikeMention = (req, res) => {
         return res.status(404).json({ error: "mention not found" });
       }
     })
-    .then(data => {
+    .then((data) => {
       if (data.empty) {
         return res.status(400).json({ error: "mention not liked" });
       } else {
@@ -192,7 +195,7 @@ exports.unlikeMention = (req, res) => {
           });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -202,7 +205,7 @@ exports.deleteMention = (req, res) => {
   const document = db.doc(`/mention/${req.params.mentionId}`);
   document
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
         return res.status(404).json({ error: "Mention not found" });
       }
@@ -215,7 +218,7 @@ exports.deleteMention = (req, res) => {
     .then(() => {
       res.json({ message: "Scream deleted successfully" });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
